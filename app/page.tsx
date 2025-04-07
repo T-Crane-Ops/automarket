@@ -3,8 +3,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { PricingSection } from '@/components/PricingSection';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
-// import { DemoWidget } from '@/components/DemoWidget';
-// import { MetricCard } from '@/components/MetricCard';
 import { TypewriterEffect } from '@/components/TypewriterEffect';
 import { FaReddit } from 'react-icons/fa';
 import { 
@@ -27,9 +25,6 @@ import { useRouter } from 'next/navigation';
 import { Link as ScrollLink } from 'react-scroll';
 import { VideoModal } from '@/components/VideoModal';
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-// Update workflowSteps to be more generic
 const workflowSteps = [
   {
     title: "Step One",
@@ -53,7 +48,6 @@ const workflowSteps = [
   }
 ];
 
-// Update platforms to be generic
 const platforms = [
   { name: 'Platform 1', icon: FaGithub },
   { name: 'Platform 2', icon: FaDiscord },
@@ -66,7 +60,6 @@ const platforms = [
   { name: 'Platform 9', icon: FaYoutube }
 ];
 
-// Update workflowSections to be generic
 const workflowSections = [
   {
     id: "overview",
@@ -126,7 +119,6 @@ const workflowSections = [
   }
 ];
 
-// Custom Hook to create section progress values
 function useSectionProgressValues(numSections: number) {
   const { scrollYProgress } = useScroll();
   
@@ -155,7 +147,6 @@ function useSectionProgressValues(numSections: number) {
   return [section1Progress, section2Progress, section3Progress, section4Progress];
 }
 
-// Feature cards data
 const featureCards = [
   {
     title: "Authentication",
