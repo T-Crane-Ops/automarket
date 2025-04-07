@@ -138,10 +138,10 @@ export function CardStylesTabContent() {
               </CardHeader>
               <CardContent>
                 <div className="flex gap-2 flex-wrap">
-                  <Badge variant="outline">borderRadius="default"</Badge>
-                  <Badge variant="outline">borderRadius="sm"</Badge>
-                  <Badge variant="outline">borderRadius="lg"</Badge>
-                  <Badge variant="outline">borderRadius="full"</Badge>
+                  <Badge variant="outline">borderRadius=&quot;default&quot;</Badge>
+                  <Badge variant="outline">borderRadius=&quot;sm&quot;</Badge>
+                  <Badge variant="outline">borderRadius=&quot;lg&quot;</Badge>
+                  <Badge variant="outline">borderRadius=&quot;full&quot;</Badge>
                 </div>
               </CardContent>
             </Card>

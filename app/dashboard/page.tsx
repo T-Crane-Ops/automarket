@@ -18,7 +18,7 @@ export default function Page() {
   const router = useRouter();
   const { subscription, isLoading: isSubLoading } = useSubscription();
   const { isInTrial, isLoading: isTrialLoading } = useTrialStatus();
-  const [hasCheckedSubscription, setHasCheckedSubscription] = useState(false);
+  const [hasCheckedSubscription] = useState(false);
   const [authTimeout, setAuthTimeout] = useState(false);
 
   // First check - Subscription and trial check
