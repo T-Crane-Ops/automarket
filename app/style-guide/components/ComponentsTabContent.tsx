@@ -46,23 +46,23 @@ export function ComponentsTabContent() {
             </div>
             <div className="space-y-2 w-full sm:w-auto">
               <Button variant="secondary">Secondary Button</Button>
-              <p className="text-sm text-neutral-700">btn-secondary / variant="secondary"</p>
+              <p className="text-sm text-neutral-700">btn-secondary / variant=&quot;secondary&quot;</p>
             </div>
             <div className="space-y-2 w-full sm:w-auto">
               <Button variant="outline">Outline Button</Button>
-              <p className="text-sm text-neutral-700">variant="outline"</p>
+              <p className="text-sm text-neutral-700">variant=&quot;outline&quot;</p>
             </div>
             <div className="space-y-2 w-full sm:w-auto">
               <Button variant="ghost">Ghost Button</Button>
-              <p className="text-sm text-neutral-700">variant="ghost"</p>
+              <p className="text-sm text-neutral-700">variant=&quot;ghost&quot;</p>
             </div>
             <div className="space-y-2 w-full sm:w-auto">
               <Button variant="link">Link Button</Button>
-              <p className="text-sm text-neutral-700">variant="link"</p>
+              <p className="text-sm text-neutral-700">variant=&quot;link&quot;</p>
             </div>
             <div className="space-y-2 w-full sm:w-auto">
               <Button variant="destructive">Destructive Button</Button>
-              <p className="text-sm text-neutral-700">variant="destructive"</p>
+              <p className="text-sm text-neutral-700">variant=&quot;destructive&quot;</p>
             </div>
           </div>
         </CardContent>

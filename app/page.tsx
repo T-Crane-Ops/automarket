@@ -4,17 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { PricingSection } from '@/components/PricingSection';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
 import { TypewriterEffect } from '@/components/TypewriterEffect';
-import { FaReddit } from 'react-icons/fa';
-import { 
-  FaGithub, 
-  FaDiscord, 
-  FaProductHunt,
-  FaXTwitter,
-  FaHackerNews,
-  FaInstagram,
-  FaTiktok,
-  FaYoutube
-} from 'react-icons/fa6';
 import { 
  Lock, CreditCard, Moon
 } from 'lucide-react';
@@ -46,18 +35,6 @@ const workflowSteps = [
     description: "Fourth step of your workflow",
     preview: <TypewriterEffect text="Completing step four..." />
   }
-];
-
-const platforms = [
-  { name: 'Platform 1', icon: FaGithub },
-  { name: 'Platform 2', icon: FaDiscord },
-  { name: 'Platform 3', icon: FaReddit },
-  { name: 'Platform 4', icon: FaProductHunt },
-  { name: 'Platform 5', icon: FaXTwitter },
-  { name: 'Platform 6', icon: FaHackerNews },
-  { name: 'Platform 7', icon: FaInstagram },
-  { name: 'Platform 8', icon: FaTiktok },
-  { name: 'Platform 9', icon: FaYoutube }
 ];
 
 const workflowSections = [
@@ -169,20 +146,8 @@ const featureCards = [
 ];
 
 export default function LandingPage() {
-  const { user } = useAuth();
-  const { isInTrial } = useTrialStatus();
   const [activeSection, setActiveSection] = useState("overview");
-  const sectionProgressValues = useSectionProgressValues(workflowSections.length);
-  
   const router = useRouter();
-
-  const [dashboardRef, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1
-  });
-
-  const { scrollYProgress } = useScroll();
-
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
   return (
@@ -191,7 +156,7 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 bg-white/80 dark:bg-neutral-darker/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4 overflow-x-auto hide-scrollbar">
-            {workflowSections.map((section, index) => (
+            {workflowSections.map((section, idx) => (
               <ScrollLink
                 key={section.id}
                 to={section.id}
@@ -209,7 +174,7 @@ export default function LandingPage() {
                       ? 'bg-primary dark:bg-primary-light text-white' 
                       : 'bg-primary/10 dark:bg-primary-light/10 text-primary dark:text-primary-light group-hover:bg-primary/20 dark:group-hover:bg-primary-light/20'}`}
                   >
-                    {index + 1}
+                    {idx + 1}
                   </span>
                 </div>
                 <span 

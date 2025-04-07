@@ -34,7 +34,7 @@ interface CardProps
 const Card = React.forwardRef<
   HTMLDivElement,
   CardProps
->(({ className, variant, borderRadius, spotlight = true, ...props }, ref) => (
+>(({ className, variant, borderRadius, spotlight, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(

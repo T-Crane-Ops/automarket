@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, Search, Bell, Calendar, ChevronRight, Settings, User, Home, Zap } from 'lucide-react';
+import { Mail, Calendar, Search, User, Home, Zap, Settings } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -144,7 +144,7 @@ export function MinimalSpotlightTabContent() {
           <Card className="max-w-xl mx-auto">
             <CardHeader className="relative z-10">
               <CardTitle>Contact Us</CardTitle>
-              <CardDescription>Send us a message and we'll get back to you shortly.</CardDescription>
+              <CardDescription>Send us a message and we&apos;ll get back to you shortly.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 relative z-10">
               <div className="space-y-2">

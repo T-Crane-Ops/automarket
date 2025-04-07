@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Mail, Search, Bell, Calendar, ChevronRight, Settings, User, Home, Zap } from 'lucide-react';
 import {
   Card,
   CardContent,

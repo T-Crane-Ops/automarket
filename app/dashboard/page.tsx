@@ -8,7 +8,7 @@ import { useTrialStatus } from '@/hooks/useTrialStatus'
 import { AppSidebar } from "@/components/ui/app-sidebar"
 import { SiteHeader } from "@/components/ui/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
 const AUTH_TIMEOUT = 15000; // 15 seconds
