@@ -2,10 +2,7 @@
 
 import { PricingSection } from '@/components/PricingSection';
 import { TypewriterEffect } from '@/components/TypewriterEffect';
-import { 
- Lock, CreditCard, Moon
-} from 'lucide-react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Link as ScrollLink } from 'react-scroll';
