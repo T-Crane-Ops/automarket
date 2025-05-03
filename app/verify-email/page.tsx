@@ -4,13 +4,24 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { CheckCircle2, Mail } from 'lucide-react';
 
 function VerifyEmailContent() {
-  const { user } = useAuth();
+  const { user, supabase } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
   const [countdown, setCountdown] = useState(60);
+  const [isResending, setIsResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   // Redirect if user is already verified
   useEffect(() => {
@@ -29,52 +40,79 @@ function VerifyEmailContent() {
   }, []);
 
   const handleResendEmail = async () => {
-    // Reset countdown
-    setCountdown(60);
-    // TODO: Implement resend verification email logic
+    if (!email) return;
+    
+    setIsResending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      if (error) throw error;
+      setResendSuccess(true);
+      // Reset countdown
+      setCountdown(60);
+    } catch (error) {
+      console.error('Error resending verification email:', error);
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="max-w-md w-full space-y-8 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
-            Check Your Email
-          </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <Card variant="minimal" className="max-w-md w-full">
+        <CardHeader className="text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
+            <Mail className="h-6 w-6 text-primary" />
+          </div>
+          <CardTitle className="text-2xl">Check your email</CardTitle>
+          <CardDescription>
             We sent a verification link to{' '}
             <span className="font-medium">{email}</span>
-          </p>
-        </div>
-
-        <div className="mt-8 space-y-6">
-          <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="text-center text-sm text-muted-foreground">
             <p>Please check your email and click the verification link to continue.</p>
-            <p className="mt-4">
-              Didn&apos;t receive the email? You can request a new one{' '}
-              {countdown > 0 ? (
-                <span>in {countdown} seconds</span>
-              ) : (
-                <button
-                  onClick={handleResendEmail}
-                  className="text-primary-darker hover:text-primary"
-                >
-                  now
-                </button>
-              )}
-            </p>
+            
+            {resendSuccess && (
+              <div className="flex items-center gap-2 text-green-500 mt-2 justify-center">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>New verification email sent!</span>
+              </div>
+            )}
           </div>
-
-          <div className="text-center">
-            <button
-              onClick={() => router.push('/login')}
-              className="text-sm text-primary-darker hover:text-primary"
+          
+          <div className="space-y-3">
+            <Button
+              variant="outline"
+              className="w-full"
+              disabled={countdown > 0 || isResending}
+              onClick={handleResendEmail}
             >
-              ← Back to login
-            </button>
+              {isResending 
+                ? 'Sending...'
+                : countdown > 0 
+                  ? `Resend email (${countdown}s)` 
+                  : 'Resend verification email'
+              }
+            </Button>
+            
+            <Button 
+              variant="link"
+              className="w-full"
+              onClick={() => router.push('/login')}
+            >
+              Back to login
+            </Button>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

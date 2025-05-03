@@ -2,11 +2,16 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, CheckCircle2, Mail } from 'lucide-react';
 
 function ResetPasswordContent() {
   const { supabase } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
   const [error, setError] = useState('');
@@ -42,50 +47,81 @@ function ResetPasswordContent() {
   if (!email) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold">Invalid Request</h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">
-              No email address provided. Please try the reset password link again.
-            </p>
-          </div>
-        </div>
+        <Card variant="minimal" className="max-w-md w-full">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Invalid Request</CardTitle>
+            <CardDescription>
+              No email address provided for password reset
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button 
+              onClick={() => router.push('/login')}
+              className="w-full"
+            >
+              Back to login
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold">Reset Password</h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-300">
-            Sending reset link to: <span className="font-medium">{email}</span>
-          </p>
-        </div>
+      <Card variant="minimal" className="max-w-md w-full">
+        <CardHeader className="text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
+            <Mail className="h-6 w-6 text-primary" />
+          </div>
+          <CardTitle className="text-2xl">Reset Password</CardTitle>
+          <CardDescription>
+            {success 
+              ? 'Instructions sent to your email' 
+              : `Sending reset link to: ${email}`
+            }
+          </CardDescription>
+        </CardHeader>
 
-        {error && (
-          <div className="bg-red-50 dark:bg-red-900/30 text-red-500 p-4 rounded-lg">
-            {error}
-            <button
-              onClick={handleResetPassword}
-              className="ml-2 underline hover:text-red-600"
-            >
-              Try again
-            </button>
-          </div>
-        )}
+        <CardContent className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {error}
+                <Button
+                  variant="link"
+                  onClick={handleResetPassword}
+                  className="ml-2 p-0 h-auto"
+                >
+                  Try again
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
 
-        {success ? (
-          <div className="bg-green-50 dark:bg-green-900/30 text-green-500 p-4 rounded-lg">
-            Reset link has been sent to your email address. Please check your inbox.
-          </div>
-        ) : (
-          <div className="text-center text-gray-600 dark:text-gray-300">
-            {isLoading ? 'Sending reset link...' : 'Processing your request...'}
-          </div>
-        )}
-      </div>
+          {success ? (
+            <div className="space-y-4">
+              <Alert variant="success">
+                <CheckCircle2 className="h-4 w-4" />
+                <AlertDescription>
+                  Reset link has been sent to your email address. Please check your inbox.
+                </AlertDescription>
+              </Alert>
+              <Button 
+                onClick={() => router.push('/login')}
+                className="w-full"
+              >
+                Back to login
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center text-sm text-muted-foreground">
+              {isLoading ? 'Sending reset link...' : 'Processing your request...'}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

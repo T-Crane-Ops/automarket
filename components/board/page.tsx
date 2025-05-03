@@ -19,8 +19,10 @@ import {
   PlusCircle,
   Clock,
   TrendingUp,
-  Activity
+  Activity,
+  Gift
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const AUTH_TIMEOUT = 15000; // 15 seconds
 
@@ -212,99 +214,60 @@ export default function Dashboard() {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0B1120]">
-      {/* Dashboard Header */}
-      <div className="bg-white dark:bg-neutral-dark border-b border-slate-200 dark:border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              Dashboard Overview
-            </h1>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-slate-600 dark:text-slate-300">
-                {isInTrial ? "Trial Period" : "Premium Plan"}
-              </span>
-            </div>
+    <div className="min-h-screen bg-slate-50">
+      {/* Top Bar */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-slate-900">
+            Dashboard
+          </h1>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-slate-600">
+              Welcome, {user?.email}
+            </span>
+            {/* Add User menu/logout here */} 
           </div>
         </div>
       </div>
 
-      {/* Dashboard Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {dashboardMetrics.map((metric, index) => (
-            <motion.div
-              key={metric.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white dark:bg-neutral-dark rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700"
-            >
-              <div className="flex items-center justify-between">
-                <div className="p-2 bg-primary/10 dark:bg-primary-light/10 rounded-lg">
-                  {metric.icon}
-                </div>
-                <span className={`text-sm font-medium ${
-                  metric.trend === 'up' ? 'text-green-500' : 'text-red-500'
-                }`}>
-                  {metric.change}
-                </span>
-              </div>
-              <h3 className="mt-4 text-2xl font-bold text-slate-900 dark:text-white">
-                {metric.value}
-              </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                {metric.title}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Activity Feed */}
+      {/* Main Content */}
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Chart Section */}
-          <div className="lg:col-span-2 bg-white dark:bg-neutral-dark rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                Analytics Overview
-              </h3>
-              <BarChart3 className="h-5 w-5 text-slate-400" />
+          {/* Welcome Card */}
+          <div className="lg:col-span-1 bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+            <div className="flex items-start gap-4">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Gift className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="mt-1 text-2xl font-bold text-slate-900">
+                  Welcome Back!
+                </h3>
+                <p className="text-sm text-slate-600 mt-1">
+                  Here's what's happening today.
+                </p>
+              </div>
             </div>
-            <div className="h-64 flex items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
-              <p className="text-slate-400 dark:text-slate-500">
-                Chart Placeholder
+            <Button className="mt-6 w-full">View Updates</Button>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">
+              Quick Stats
+            </h3>
+            <div className="h-64 flex items-center justify-center border-2 border-dashed border-slate-200 rounded-lg">
+              <p className="text-slate-400">
+                Statistics will appear here.
               </p>
             </div>
           </div>
 
           {/* Recent Activity */}
-          <div className="bg-white dark:bg-neutral-dark rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">
-              Recent Activity
+          <div className="lg:col-span-3 bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+             <h3 className="text-lg font-semibold text-slate-900 mb-4">
+               Recent Activity
             </h3>
-            <div className="space-y-4">
-              {recentActivity.map((activity) => (
-                <motion.div
-                  key={activity.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center space-x-3 text-sm"
-                >
-                  <div className="p-2 bg-primary/10 dark:bg-primary-light/10 rounded-lg">
-                    {activity.icon}
-                  </div>
-                  <div>
-                    <p className="text-slate-900 dark:text-white">
-                      {activity.action}
-                    </p>
-                    <p className="text-slate-500 dark:text-slate-400 text-xs">
-                      {activity.timestamp}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
           </div>
         </div>
       </div>

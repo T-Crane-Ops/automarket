@@ -165,13 +165,13 @@ export function OnboardingTour({ isFirstTime, onComplete }: OnboardingTourProps)
         <div className="flex min-h-screen items-center justify-center">
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
-          <div className="relative bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-[400px] min-h-[250px] max-w-[calc(100%-2rem)]">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+          <div className="relative bg-white rounded-lg p-4 sm:p-6 w-[400px] min-h-[250px] max-w-[calc(100%-2rem)]">
+            <h2 className="text-lg font-medium text-gray-900">
               {steps[currentStep].title}
             </h2>
 
             <div className="min-h-[120px] mt-4">
-              <div className="text-gray-600 dark:text-gray-300">
+              <div className="text-gray-600">
                 {steps[currentStep].description}
               </div>
             </div>
@@ -179,9 +179,7 @@ export function OnboardingTour({ isFirstTime, onComplete }: OnboardingTourProps)
             <div className="mt-2 flex justify-between items-center">
               <button
                 onClick={handlePrevious}
-                className={`bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 
-                  text-gray-700 dark:text-gray-300 px-4 py-2 rounded-full 
-                  ${currentStep === 0 ? 'invisible' : ''}`}
+                className={`bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-full ${currentStep === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 Previous
               </button>

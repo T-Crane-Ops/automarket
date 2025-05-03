@@ -2,22 +2,25 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoginForm } from '@/components/LoginForm';
 
 export default function LoginPage() {
   const { user, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/dashboard';
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
-      router.replace('/dashboard');
+      router.replace(redirect);
     } else {
       setIsLoading(false);
     }
-  }, [user, router]);
+  }, [user, router, redirect]);
 
   const handleSubmit = async (email: string, password: string, isSignUp: boolean) => {
     setError('');
@@ -34,10 +37,10 @@ export default function LoginPage() {
           return;
         }
         
-        router.replace('/dashboard');
+        router.replace(redirect);
       } else {
         await signInWithEmail(email, password);
-        router.replace('/dashboard');
+        router.replace(redirect);
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Authentication failed');
@@ -48,24 +51,31 @@ export default function LoginPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-foreground">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex mt-20 justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        {/* <h1 className="text-4xl font-bold text-center mb-8 text-primary dark:text-white">
-          NextTemp
-        </h1> */}
-        <LoginForm
-          onSubmit={handleSubmit}
-          onGoogleSignIn={signInWithGoogle}
-          isLoading={isLoading}
-          error={error}
-        />
+        <Card variant="minimal">
+          <CardHeader className="text-center space-y-2">
+            <CardTitle className="text-2xl">Welcome back</CardTitle>
+            <CardDescription>
+              Sign in to your account to continue
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <LoginForm
+              onSubmit={handleSubmit}
+              onGoogleSignIn={signInWithGoogle}
+              isLoading={isLoading}
+              error={error}
+            />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

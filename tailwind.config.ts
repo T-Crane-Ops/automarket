@@ -1,8 +1,8 @@
 import type { Config } from "tailwindcss";
 
 export default {
-  darkMode: ['class', 'class'],
-  content: [
+    darkMode: ["class"],
+    content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
@@ -10,6 +10,8 @@ export default {
   theme: {
   	extend: {
   		colors: {
+  			brand: "hsl(var(--brand))",
+  			"brand-foreground": "hsl(var(--brand-foreground))",
   			primary: {
   				'50': 'hsl(var(--primary-50))',
   				'100': 'hsl(var(--primary-100))',
@@ -43,54 +45,44 @@ export default {
   				blue: {
   					DEFAULT: '#3B82F6',
   					light: '#93C5FD',
-  					dark: '#1D4ED8'
   				},
   				green: {
   					DEFAULT: '#10B981',
   					light: '#6EE7B7',
-  					dark: '#047857'
   				},
   				yellow: {
   					DEFAULT: '#F59E0B',
   					light: '#FCD34D',
-  					dark: '#B45309'
   				},
   				orange: {
   					DEFAULT: '#F97316',
   					light: '#FDBA74',
-  					dark: '#C2410C'
   				},
   				red: {
   					DEFAULT: '#EF4444',
   					light: '#FCA5A5',
-  					dark: '#B91C1C'
   				},
   				purple: {
   					DEFAULT: '#8B5CF6',
   					light: '#C4B5FD',
-  					dark: '#6D28D9'
   				}
   			},
   			status: {
   				success: {
   					DEFAULT: '#22C55E',
   					light: '#86EFAC',
-  					dark: '#15803D'
   				},
   				warning: {
   					DEFAULT: '#F59E0B',
   					light: '#FCD34D',
-  					dark: '#B45309'
   				},
   				error: {
   					DEFAULT: '#EF4444',
   					light: '#FCA5A5',
-  					dark: '#B91C1C'
   				},
   				info: {
   					DEFAULT: '#3B82F6',
   					light: '#93C5FD',
-  					dark: '#1D4ED8'
   				}
   			},
   			background: 'hsl(var(--background))',
@@ -231,7 +223,10 @@ export default {
   			button: '0px 2px 4px rgba(0, 0, 0, 0.08)',
   			'button-hover': '0px 4px 8px rgba(0, 0, 0, 0.12)',
   			focus: '0 0 0 3px rgba(var(--primary-rgb), 0.4)',
-  			none: 'none'
+  			glow: "0 -16px 128px 0 hsla(var(--brand-foreground) / 0.5) inset, 0 -16px 32px 0 hsla(var(--brand) / 0.5) inset",
+  			none: 'none',
+  			subtle: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+  			hover: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
   		},
   		keyframes: {
   			shimmer: {
@@ -241,6 +236,10 @@ export default {
   				'100%': {
   					backgroundPosition: '1000px 0'
   				}
+  			},
+  			marquee: {
+  				'0%': { transform: 'translateX(0)' },
+  				'100%': { transform: 'translateX(calc(-100% - var(--gap)))' },
   			},
   			float: {
   				'0%, 100%': {
@@ -273,6 +272,42 @@ export default {
   				to: {
   					height: '0'
   				}
+  			},
+  			"fade-in-up": {
+  				"0%": { 
+  					opacity: "0",
+  					transform: "translateY(10px)"
+  				},
+  				"100%": {
+  					opacity: "1",
+  					transform: "translateY(0)"
+  				}
+  			},
+  			"fade-in": {
+  				"0%": {
+  					opacity: "0"
+  				},
+  				"100%": {
+  					opacity: "1"
+  				}
+  			},
+  			"scale-in": {
+  				"0%": {
+  					opacity: "0",
+  					transform: "scale(0.95)"
+  				},
+  				"100%": {
+  					opacity: "1",
+  					transform: "scale(1)"
+  				}
+  			},
+  			appear: {
+  				"0%": { opacity: "0", transform: "translateY(10px)" },
+  				"100%": { opacity: "1", transform: "translateY(0)" }
+  			},
+  			"appear-zoom": {
+  				"0%": { opacity: "0", transform: "scale(0.95)" },
+  				"100%": { opacity: "1", transform: "scale(1)" }
   			}
   		},
   		animation: {
@@ -280,8 +315,22 @@ export default {
   			float: 'float 5s ease-in-out infinite',
   			pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
-  		}
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			marquee: 'marquee var(--duration) linear infinite',
+  			"fade-in-up": "fade-in-up 0.5s ease-out forwards",
+  			"fade-in": "fade-in 0.5s ease-out forwards",
+  			"scale-in": "scale-in 0.5s ease-out forwards",
+  			appear: "appear 0.5s ease-out forwards",
+  			"appear-zoom": "appear-zoom 0.5s ease-out forwards",
+  		},
+  		maxWidth: {
+  			container: "80rem",
+  		},
+  		backgroundImage: {
+  			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+  			'gradient-conic':
+  				'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+  		},
   	}
   },
   plugins: [require("tailwindcss-animate")],

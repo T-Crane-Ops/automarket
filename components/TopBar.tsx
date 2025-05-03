@@ -7,7 +7,11 @@ import Link from 'next/link';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
 import { BuyMeCoffee } from './BuyMeCoffee';
-// import { supabase } from '@/utils/supabase';
+import Image from 'next/image';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { User, Settings, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // TopBar component handles user profile display and navigation
 export default function TopBar() {
@@ -50,10 +54,10 @@ export default function TopBar() {
   };
 
   return (
-    <div className="w-full bg-surface-light dark:bg-surface-dark border-b border-gray-200 dark:border-gray-700">
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-3">
-        <Link href="/" className="text-md sm:text-lg font-medium text-text dark:text-text-dark flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <span className="text-2xl">🎬</span>
+    <header className="sticky top-0 z-50 w-full bg-surface-light border-b border-gray-200">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <Link href="/" className="text-md sm:text-lg font-medium text-text flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <Image src="/logo.png" alt="Logo" width={32} height={32} />
           <span className="font-sans">NextTemp</span>
         </Link>
 
@@ -61,7 +65,6 @@ export default function TopBar() {
           {!user ? (
             <>
               <BuyMeCoffee />
-              {/* Show login button for unauthenticated users */}
               <Link
                 href="/login"
                 className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-full transition-colors shadow-subtle hover:shadow-hover"
@@ -70,7 +73,6 @@ export default function TopBar() {
               </Link>
             </>
           ) : (
-            // Show subscription and profile for authenticated users
             <>
               {!isLoadingSubscription && (!isInTrial) && (
                 !subscription || 
@@ -100,18 +102,21 @@ export default function TopBar() {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-2 hover:bg-neutral-darker/10 dark:hover:bg-neutral-darker/50 px-3 py-2 rounded-full transition-colors"
+                  className="flex items-center gap-2 hover:bg-neutral-darker/10 px-3 py-2 rounded-full transition-colors"
                 >
-                  <div className="w-8 h-8 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary dark:text-primary-light">
-                    {user.email?.[0].toUpperCase()}
-                  </div>
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={user.user_metadata?.avatar_url} />
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {user.email?.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
                 </button>
                 
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-hover py-1 z-[60] border border-gray-200 dark:border-gray-700">
+                  <div className="absolute right-0 mt-2 w-48 bg-surface-light rounded-lg shadow-hover py-1 z-[60] border border-gray-200">
                     <Link
                       href="/profile"
-                      className="block px-4 py-2 text-sm text-text dark:text-text-dark hover:bg-neutral dark:hover:bg-neutral-dark"
+                      className="block px-4 py-2 text-sm text-text hover:bg-neutral"
                       onClick={(e) => {
                         e.preventDefault();
                         setIsDropdownOpen(false);
@@ -123,7 +128,7 @@ export default function TopBar() {
                     <button
                       onClick={handleLogout}
                       disabled={isLoggingOut}
-                      className="block w-full text-left px-4 py-2 text-sm text-danger hover:bg-neutral dark:hover:bg-neutral-dark disabled:opacity-50"
+                      className="block w-full text-left px-4 py-2 text-sm text-danger hover:bg-neutral disabled:opacity-50"
                     >
                       {isLoggingOut ? 'Signing Out...' : 'Sign Out'}
                     </button>
@@ -134,6 +139,6 @@ export default function TopBar() {
           )}
         </div>
       </div>
-    </div>
+    </header>
   );
 } 

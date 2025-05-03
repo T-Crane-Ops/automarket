@@ -4,6 +4,10 @@
 
 @layer base {
   :root {
+    /* Brand colors */
+    --brand: 27 96% 61%;
+    --brand-foreground: 31 97% 72%;
+    
     /* Primary brand color - Professional teal with expanded palette */
     --primary: 174 60% 41%; /* #1ABC9C - Professional teal */
     --primary-hover: 174 60% 47%; /* Lighter for hover */
@@ -63,6 +67,9 @@
 
   .dark {
     /* Dark mode variants */
+    --brand: 31 97% 72%;
+    --brand-foreground: 27 96% 61%;
+    
     --background: 222 47% 11%; /* #111827 - Near Black for background */
     --foreground: 210 40% 98%; /* Near white text in dark mode */
     
@@ -105,6 +112,21 @@
     --border: 217 33% 17%; /* Dark border */
     --input: 217 33% 17%; /* Dark input border */
     --ring: 174 60% 41%; /* Same as primary */ --sidebar-background: 240 5.9% 10%; --sidebar-foreground: 240 4.8% 95.9%; --sidebar-primary: 224.3 76.3% 48%; --sidebar-primary-foreground: 0 0% 100%; --sidebar-accent: 240 3.7% 15.9%; --sidebar-accent-foreground: 240 4.8% 95.9%; --sidebar-border: 240 3.7% 15.9%; --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer utilities {
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+  .delay-700 {
+    animation-delay: 700ms;
+  }
+  .delay-1000 {
+    animation-delay: 1000ms;
   }
 }
 
@@ -311,7 +333,23 @@
   transform-origin: center;
 }
 
+/* Animations */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
 
+.animate-marquee {
+  animation: marquee var(--duration) linear infinite;
+}
+
+.animate-paused {
+  animation-play-state: paused;
+}
 
 @layer base {
   * {
