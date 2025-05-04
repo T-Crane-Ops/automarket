@@ -1,9 +1,18 @@
+/**
+ * STRIPE WEBHOOK HANDLER
+ * 
+ * This file processes webhook events from Stripe, which are notifications about
+ * payment and subscription events. It updates our database based on these events.
+ */
+
+// Import required dependencies
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import Stripe from 'stripe';
-import { supabaseAdmin } from '@/utils/supabase-admin';
-import { withCors } from '@/utils/cors';
+import Stripe from 'stripe'; // For Stripe payment processing
+import { supabaseAdmin } from '@/utils/supabase-admin'; // Admin Supabase client
+import { withCors } from '@/utils/cors'; // CORS handling middleware
 
+// Initialize Stripe with the secret key from environment variables
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
@@ -13,7 +22,7 @@ function logWebhookEvent(message: string, data?: unknown) {
   console.log(`[${timestamp}] WEBHOOK: ${message}`, data ? JSON.stringify(data, null, 2) : '');
 }
 
-// Define interfaces for stored data
+// Define interfaces for temporary data storage
 interface StoredSessionData {
   userId: string;
   customerId: string;
@@ -24,17 +33,19 @@ interface StoredSubscriptionData {
   customer: string;
 }
 
-// Store both checkout sessions and subscriptions temporarily
+// Store checkout sessions and subscriptions temporarily in memory
+// (This is a simple solution - production apps might use a database for this)
 const checkoutSessionMap = new Map<string, StoredSessionData>();
 const pendingSubscriptions = new Map<string, StoredSubscriptionData>();
 
-// Need to disable body parsing for Stripe webhooks
+// Disable body parsing for Stripe webhooks (Stripe requires raw body)
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
+// Helper function to check if a customer already has an active subscription
 async function checkExistingSubscription(customerId: string): Promise<boolean> {
   const { data: existingSubs } = await supabaseAdmin
     .from('subscriptions')
@@ -46,54 +57,34 @@ async function checkExistingSubscription(customerId: string): Promise<boolean> {
   return !!existingSubs;
 }
 
-// Currently Handled Events:
-// 1. checkout.session.completed - When a customer completes checkout
-// 2. customer.subscription.created - When a new subscription is created
-// 3. customer.subscription.updated - When a subscription is updated
-// 4. customer.subscription.deleted - When a subscription is cancelled/deleted
-// 5. customer.subscription.pending_update_applied - When a pending update is applied
-// 6. customer.subscription.pending_update_expired - When a pending update expires
-// 7. customer.subscription.trial_will_end - When a trial is about to end
-
-// Other Important Events You Might Want to Handle:
-// Payment Related:
-// - invoice.paid - When an invoice is paid successfully
-// - invoice.payment_failed - When a payment fails
-// - invoice.upcoming - When an invoice is going to be created
-// - payment_intent.succeeded - When a payment is successful
-// - payment_intent.payment_failed - When a payment fails
-
-// Customer Related:
-// - customer.created - When a new customer is created
-// - customer.updated - When customer details are updated
-// - customer.deleted - When a customer is deleted
-
-// Subscription Related:
-// - customer.subscription.paused - When a subscription is paused
-// - customer.subscription.resumed - When a subscription is resumed
-// - customer.subscription.trial_will_end - 3 days before trial ends
-
-// Checkout Related:
-// - checkout.session.async_payment_succeeded - Async payment success
-// - checkout.session.async_payment_failed - Async payment failure
-// - checkout.session.expired - When checkout session expires
-
+/**
+ * POST handler for Stripe webhooks
+ * 
+ * This function processes webhook events from Stripe, which are notifications
+ * about various events like:
+ * - Checkout completion
+ * - Subscription creation, updates, and cancellation
+ * - Payment success or failure
+ */
 export const POST = withCors(async function POST(request: NextRequest) {
-  const body = await request.text();
-  const sig = request.headers.get('stripe-signature')!;
+  const body = await request.text(); // Get the raw request body
+  const sig = request.headers.get('stripe-signature')!; // Get Stripe signature from headers
 
   try {
     logWebhookEvent('Received webhook request');
     logWebhookEvent('Stripe signature', sig);
 
+    // Verify the webhook signature to ensure it's from Stripe
     const event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
     logWebhookEvent(`Event received: ${event.type}`, event.data.object);
 
+    // Handle different types of events
     switch (event.type) {
       case 'checkout.session.completed': {
+        // Customer completed the checkout process
         const session = event.data.object as Stripe.Checkout.Session;
         
-        // Check for existing active subscription
+        // Check for existing active subscription to prevent duplicates
         const hasActiveSubscription = await checkExistingSubscription(session.customer as string);
         
         if (hasActiveSubscription) {
@@ -102,7 +93,7 @@ export const POST = withCors(async function POST(request: NextRequest) {
             sessionId: session.id
           });
           
-          // Cancel the new subscription immediately
+          // Cancel the new subscription immediately to prevent double-charging
           if (session.subscription) {
             await stripe.subscriptions.cancel(session.subscription as string);
           }
@@ -120,6 +111,7 @@ export const POST = withCors(async function POST(request: NextRequest) {
           subscriptionId: session.subscription
         });
 
+        // Validate that we have all needed data
         if (!session.client_reference_id || !session.customer || !session.subscription) {
           logWebhookEvent('Missing required session data', {
             clientReferenceId: session.client_reference_id,
@@ -130,6 +122,7 @@ export const POST = withCors(async function POST(request: NextRequest) {
         }
 
         try {
+          // Create a subscription record in our database
           const subscription = await createSubscription(
             session.subscription as string,
             session.client_reference_id!,
@@ -144,12 +137,13 @@ export const POST = withCors(async function POST(request: NextRequest) {
       }
 
       case 'customer.subscription.created': {
+        // A new subscription was created
         const subscription = event.data.object as Stripe.Subscription;
         
-        // Check if we have the session data already
+        // Check if we have session data to associate this subscription with a user
         const sessionData = checkoutSessionMap.get(subscription.id);
         if (sessionData) {
-          // We can create the subscription now
+          // We can create the subscription record in our database
           await createSubscription(
             subscription.id,
             sessionData.userId,
@@ -157,7 +151,7 @@ export const POST = withCors(async function POST(request: NextRequest) {
           );
           checkoutSessionMap.delete(subscription.id);
         } else {
-          // Store the subscription data until we get the session
+          // Store this subscription until we get session data
           pendingSubscriptions.set(subscription.id, {
             id: subscription.id,
             customer: subscription.customer as string
@@ -166,6 +160,7 @@ export const POST = withCors(async function POST(request: NextRequest) {
         break;
       }
 
+      // These events update subscription status in our database
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted':
       case 'customer.subscription.pending_update_applied':
@@ -173,6 +168,7 @@ export const POST = withCors(async function POST(request: NextRequest) {
       case 'customer.subscription.trial_will_end': {
         const subscription = event.data.object as Stripe.Subscription;
         
+        // Update our database with the latest subscription status
         await supabaseAdmin
           .from('subscriptions')
           .update({
@@ -187,8 +183,10 @@ export const POST = withCors(async function POST(request: NextRequest) {
       }
 
       case 'customer.subscription.deleted': {
+        // Subscription was permanently deleted (or expired)
         const subscription = event.data.object as Stripe.Subscription;
         
+        // Update our database to mark subscription as deleted
         await supabaseAdmin
           .from('subscriptions')
           .update({
@@ -202,25 +200,16 @@ export const POST = withCors(async function POST(request: NextRequest) {
         break;
       }
 
-      // Note: You might want to add handlers for these common events:
-      // case 'invoice.paid': {
-      //   const invoice = event.data.object as Stripe.Invoice;
-      //   // Handle successful payment
-      // }
-
-      // case 'invoice.payment_failed': {
-      //   const invoice = event.data.object as Stripe.Invoice;
-      //   // Handle failed payment, notify user
-      // }
-
-      // case 'customer.subscription.trial_will_end': {
-      //   const subscription = event.data.object as Stripe.Subscription;
-      //   // Notify user about trial ending
-      // }
+      // Additional events could be handled here:
+      // - invoice.paid
+      // - invoice.payment_failed
+      // - customer.subscription.trial_will_end
     }
 
+    // Return success response
     return NextResponse.json({ received: true });
   } catch (err) {
+    // Log and return error response
     logWebhookEvent('Webhook error', err);
     return NextResponse.json(
       { error: 'Webhook handler failed' },
@@ -229,13 +218,23 @@ export const POST = withCors(async function POST(request: NextRequest) {
   }
 });
 
+/**
+ * Helper function to create or update a subscription in our database
+ * 
+ * This function:
+ * 1. Retrieves detailed subscription data from Stripe
+ * 2. Checks if we already have this subscription in our database
+ * 3. Creates or updates the subscription record
+ */
 async function createSubscription(subscriptionId: string, userId: string, customerId: string) {
   logWebhookEvent('Starting createSubscription', { subscriptionId, userId, customerId });
 
   try {
+    // Get detailed subscription data from Stripe
     const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
     logWebhookEvent('Retrieved Stripe subscription', stripeSubscription);
 
+    // Check if this subscription already exists in our database
     const { data: existingData, error: checkError } = await supabaseAdmin
       .from('subscriptions')
       .select('*')
@@ -247,6 +246,7 @@ async function createSubscription(subscriptionId: string, userId: string, custom
     }
 
     if (existingData) {
+      // If subscription exists, update it with the latest data
       logWebhookEvent('Found existing subscription', existingData);
       const { error: updateError } = await supabaseAdmin
         .from('subscriptions')
@@ -267,6 +267,7 @@ async function createSubscription(subscriptionId: string, userId: string, custom
       return existingData;
     }
 
+    // If subscription doesn't exist, create a new record
     logWebhookEvent('Creating new subscription record');
     const { data, error: insertError } = await supabaseAdmin
       .from('subscriptions')

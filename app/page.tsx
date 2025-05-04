@@ -6,7 +6,7 @@ import { CTASection } from '@/components/landingpage/cta';
 import { Pricing } from '@/components/landingpage/pricing';
 import { TestimonialsSection } from '@/components/landingpage/testimonials';
 import { Footer } from '@/components/landingpage/footer';
-import { BentoGridSection } from "@/components/landingpage/bentogrid";
+import { BentoGridSection } from "@/components/landingpage/(bento)/bentogrid";
 import { FeatureGridSection } from "@/components/landingpage/feature";
 import TimelineSection from "@/components/landingpage/timeline";
 

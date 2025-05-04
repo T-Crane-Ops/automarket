@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { useSubscription } from "@/hooks/useSubscription"
 import { useTrialStatus } from "@/hooks/useTrialStatus"
+import { cn } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -22,6 +23,8 @@ export function NavMain({
     title: string
     url: string
     icon?: LucideIcon
+    onClick?: () => void
+    isActive?: boolean
   }[]
 }) {
   const router = useRouter()
@@ -75,7 +78,16 @@ export function NavMain({
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton 
                 tooltip={item.title}
-                onClick={() => router.push(item.url)}
+                onClick={() => {
+                  if (item.onClick) {
+                    item.onClick();
+                  } else if (item.url !== '#') {
+                    router.push(item.url);
+                  }
+                }}
+                className={cn(
+                  item.isActive && "bg-primary/10 text-primary"
+                )}
               >
                 {item.icon && <item.icon />}
                 <span>{item.title}</span>

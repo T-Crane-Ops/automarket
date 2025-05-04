@@ -41,12 +41,10 @@ export function NavUser() {
   const { isMobile } = useSidebar();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Handle user logout with error handling and loading state
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
       await signOut();
-      setIsLoggingOut(false);
     } catch (error) {
       console.error('Logout failed:', error);
       alert('Failed to sign out. Please try again.');
@@ -118,22 +116,6 @@ export function NavUser() {
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => router.push('/profile')}>
-                <UserCircleIcon />
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/profile')}>
-                <CreditCardIcon />
-                Subscription
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
               <LogOutIcon />
               {isLoggingOut ? 'Signing Out...' : 'Sign Out'}

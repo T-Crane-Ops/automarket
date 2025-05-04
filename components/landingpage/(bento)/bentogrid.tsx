@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import React from "react";
-import { BentoGrid, BentoCard } from "@/components/ui/bento-grid";
+import { BentoGrid, BentoCard } from "@/components/landingpage/(bento)/bento-grid";
 import {
   FileText,
   Database,

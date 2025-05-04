@@ -46,6 +46,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isSubscriber, setIsSubscriber] = useState(false);
 
   const checkSubscription = useCallback(async (userId: string) => {
+    if (!userId) return;
+    
     try {
       const { data, error } = await supabase
         .from('subscriptions')
@@ -61,15 +63,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // console.log("AuthContext - subscription data: ", data)
-
       const isValid = data && 
         ['active', 'trialing'].includes(data.status) && 
         new Date(data.current_period_end) > new Date();
-      // console.log("AuthContext -  isValid: ", data)
 
       setIsSubscriber(!!isValid);
-      console.log("AuthContext -  set isSubscriber: ", isSubscriber)
     } catch (error) {
       console.error('Subscription check error:', error);
       setIsSubscriber(false);
@@ -78,32 +76,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    console.log("AuthContext - mounted useEffect:", mounted);
+    let authListener: { data: { subscription: { unsubscribe: () => void } } } | null = null;
     
     const initializeAuth = async () => {
       try {
         setIsLoading(true);
-        console.log("AuthContext - Starting Try in InitializeAuth!");
 
-        // // First, get initial session
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // First, get initial session
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
-        if (error || !mounted) {
-          setIsLoading(false);
+        if (sessionError) {
+          console.error("Failed to get auth session:", sessionError);
+          if (mounted) setIsLoading(false);
           return;
         }
 
-        // Update initial state
-        setSession(session);
-        const currentUser = session?.user ?? null;
+        if (!mounted) return;
+
+        const currentSession = sessionData?.session;
+        const currentUser = currentSession?.user ?? null;
+        
+        // Update state
+        setSession(currentSession);
         setUser(currentUser);
 
-        if (currentUser) {
+        // Check subscription status if user exists
+        if (currentUser?.id) {
           await checkSubscription(currentUser.id);
         }
         
-        // Then set up listener for future changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        // Set up listener for future auth changes
+        authListener = supabase.auth.onAuthStateChange(
           async (_event, newSession) => {
             if (!mounted) return;
             
@@ -111,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setSession(newSession);
             setUser(newUser);
             
-            if (newUser) {
+            if (newUser?.id) {
               await checkSubscription(newUser.id);
             } else {
               setIsSubscriber(false);
@@ -121,11 +124,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Only set loading to false after everything is initialized
         if (mounted) setIsLoading(false);
-        
-        return () => {
-          mounted = false;
-          subscription.unsubscribe();
-        };
       } catch (error) {
         console.error("Auth initialization error:", error);
         if (mounted) setIsLoading(false);
@@ -133,6 +131,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     initializeAuth();
+    
+    return () => {
+      mounted = false;
+      if (authListener?.data?.subscription) {
+        authListener.data.subscription.unsubscribe();
+      }
+    };
   }, [checkSubscription]);
 
   const value = {

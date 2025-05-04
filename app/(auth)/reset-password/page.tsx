@@ -1,19 +1,30 @@
-'use client';
+/**
+ * RESET PASSWORD PAGE
+ * 
+ * This page allows users to request a password reset. It automatically sends a reset
+ * email to the provided email address and displays the appropriate status messages.
+ */
 
+'use client'; // This tells Next.js this is a client-side component (runs in browser)
+
+// Import necessary libraries and components
 import { useState, useEffect, Suspense } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useSearchParams, useRouter } from 'next/navigation';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext'; // For authentication functions
+import { useSearchParams, useRouter } from 'next/navigation'; // For navigation and URL parameters
+import LoadingSpinner from '@/components/LoadingSpinner'; // Loading indicator
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'; // UI components
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, CheckCircle2, Mail } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Mail } from 'lucide-react'; // Icons
 
+// Main component content, wrapped with Suspense in the exported component
 function ResetPasswordContent() {
-  const { supabase } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const email = searchParams.get('email');
+  const { supabase } = useAuth(); // Get Supabase client from auth context
+  const router = useRouter(); // Next.js router for navigation
+  const searchParams = useSearchParams(); // Get URL parameters
+  const email = searchParams.get('email'); // Extract email from URL
+  
+  // State variables for tracking status
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,6 +36,7 @@ function ResetPasswordContent() {
     }
   }, [email]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Function to handle the password reset request
   const handleResetPassword = async () => {
     if (!email) return;
     
@@ -32,8 +44,9 @@ function ResetPasswordContent() {
     setError('');
 
     try {
+      // Call Supabase auth to send reset email
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/update-password#`,
+        redirectTo: `${window.location.origin}/update-password#`, // Where to send the user after clicking reset link
       });
       if (error) throw error;
       setSuccess(true);
@@ -44,6 +57,7 @@ function ResetPasswordContent() {
     }
   };
 
+  // If no email is provided, show error message
   if (!email) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -67,6 +81,7 @@ function ResetPasswordContent() {
     );
   }
 
+  // Main component UI - shows status of reset request
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="bg-background/50 backdrop-blur-sm border border-primary/10 max-w-md w-full">
@@ -84,6 +99,7 @@ function ResetPasswordContent() {
         </CardHeader>
 
         <CardContent className="space-y-4">
+          {/* Show error message if there was a problem */}
           {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
@@ -100,6 +116,7 @@ function ResetPasswordContent() {
             </Alert>
           )}
 
+          {/* Show success message or loading state */}
           {success ? (
             <div className="space-y-4">
               <Alert variant="success">
@@ -126,6 +143,7 @@ function ResetPasswordContent() {
   );
 }
 
+// Main exported component with Suspense for loading states
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={<LoadingSpinner />}>

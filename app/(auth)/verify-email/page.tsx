@@ -1,4 +1,12 @@
-'use client';
+/**
+ * VERIFY EMAIL PAGE
+ * 
+ * This page is shown to users after they sign up and need to verify their email address.
+ * It provides information about checking their email and allows them to request a new
+ * verification email if needed.
+ */
+
+'use client'; // This tells Next.js this is a client-side component (runs in browser)
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -31,12 +39,14 @@ function VerifyEmailContent() {
     }
   }, [user, router]);
 
-  // Countdown timer
+  // Countdown timer for resend button
   useEffect(() => {
+    // Set up a timer that decrements the countdown every second
     const timer = setInterval(() => {
       setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
 
+    // Clean up the timer when component unmounts
     return () => clearInterval(timer);
   }, []);
 
@@ -45,6 +55,7 @@ function VerifyEmailContent() {
     
     setIsResending(true);
     try {
+      // Call Supabase to resend verification email
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: email,
@@ -55,7 +66,7 @@ function VerifyEmailContent() {
       
       if (error) throw error;
       setResendSuccess(true);
-      // Reset countdown
+      // Reset countdown after successful resend
       setCountdown(60);
     } catch (error) {
       console.error('Error resending verification email:', error);
@@ -81,6 +92,7 @@ function VerifyEmailContent() {
           <div className="text-center text-sm text-muted-foreground">
             <p>Please check your email and click the verification link to continue.</p>
             
+            {/* Success message when a new verification email is sent */}
             {resendSuccess && (
               <Alert variant="success" className="mt-2">
                 <CheckCircle2 className="h-4 w-4" />
@@ -92,6 +104,7 @@ function VerifyEmailContent() {
           </div>
           
           <div className="space-y-3">
+            {/* Resend button with countdown timer */}
             <Button
               variant="outline"
               className="w-full"
@@ -106,6 +119,7 @@ function VerifyEmailContent() {
               }
             </Button>
             
+            {/* Back to login button */}
             <Button 
               variant="link"
               className="w-full"

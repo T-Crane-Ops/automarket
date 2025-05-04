@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import debounce from 'lodash/debounce';
 
@@ -16,38 +16,55 @@ export interface Subscription {
   updated_at: string;
 }
 
+// Global cache for subscriptions
+const globalSubscriptionCache: { [key: string]: { data: Subscription | null, timestamp: number } } = {};
+const CACHE_DURATION = 60000; // 1 minute
+
 export function useSubscription() {
   const { user, supabase } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isMounted = useRef(true);
+  const isCurrentlyFetching = useRef(false);
+  const fetchAttempts = useRef(0);
+  const MAX_RETRIES = 3;
+  const retryTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const subscriptionCache = new Map<string, {data: Subscription | null, timestamp: number}>();
-  const CACHE_DURATION = 30000; // 30 seconds
-
-  const fetchSubscription = useCallback(async () => {
+  const fetchSubscription = useCallback(async (forceRefresh = false) => {
     if (!user?.id) {
       setSubscription(null);
       setLoading(false);
       return;
     }
 
-    // Check cache first
-    const cached = subscriptionCache.get(user.id);
-    const now = Date.now();
-    
-    if (cached && (now - cached.timestamp < CACHE_DURATION)) {
-      setSubscription(cached.data);
-      setLoading(false);
-      return;
-    }
+    // Prevent multiple simultaneous fetches
+    if (isCurrentlyFetching.current && !forceRefresh) return;
+    isCurrentlyFetching.current = true;
+
+    // Don't show loading if we already have data
+    if (!subscription) setLoading(true);
+    setError(null);
 
     try {
+      // Check cache first, unless force refreshing
+      const now = Date.now();
+      const cachedSub = globalSubscriptionCache[user.id];
+      
+      if (!forceRefresh && cachedSub && (now - cachedSub.timestamp < CACHE_DURATION)) {
+        if (isMounted.current) {
+          setSubscription(cachedSub.data);
+          setLoading(false);
+        }
+        isCurrentlyFetching.current = false;
+        return;
+      }
+
       const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
         .eq('user_id', user.id)
-        .in('status', ['active', 'trialing'])
+        .in('status', ['active', 'trialing', 'canceled'])
         .order('created_at', { ascending: false })
         .maybeSingle();
 
@@ -57,44 +74,74 @@ export function useSubscription() {
         ['active', 'trialing'].includes(data.status) && 
         new Date(data.current_period_end) > new Date();
 
-      const result = isValid ? data : null;
+      const result = data ? data : null;
       
       // Update cache
-      subscriptionCache.set(user.id, {
+      globalSubscriptionCache[user.id] = {
         data: result,
         timestamp: now
-      });
+      };
       
-      setSubscription(result);
+      if (isMounted.current) {
+        setSubscription(result);
+        fetchAttempts.current = 0; // Reset attempts on success
+      }
     } catch (err) {
       console.error('Subscription fetch error:', err);
-      setError('Failed to load subscription');
-      setSubscription(null);
+      
+      if (isMounted.current) {
+        setError('Failed to load subscription');
+        
+        // Implement retry logic
+        if (fetchAttempts.current < MAX_RETRIES) {
+          fetchAttempts.current += 1;
+          console.log(`Retrying subscription fetch (attempt ${fetchAttempts.current} of ${MAX_RETRIES})...`);
+          
+          // Clear any existing timeout
+          if (retryTimeout.current) clearTimeout(retryTimeout.current);
+          
+          // Exponential backoff: 1s, 2s, 4s, etc.
+          const delay = Math.min(1000 * Math.pow(2, fetchAttempts.current - 1), 10000);
+          retryTimeout.current = setTimeout(() => fetchSubscription(true), delay);
+        }
+      }
     } finally {
-      setLoading(false);
+      if (isMounted.current) {
+        setLoading(false);
+      }
+      isCurrentlyFetching.current = false;
     }
   }, [user?.id, supabase]);
 
+  // Set up cleanup on component unmount
   useEffect(() => {
-    fetchSubscription();
-  }, [fetchSubscription]);
-
-  const checkValidSubscription = useCallback((data: Subscription[]): boolean => {
-    return data.some(sub => 
-      ['active', 'trialing'].includes(sub.status) &&
-      new Date(sub.current_period_end) > new Date()
-    );
+    isMounted.current = true;
+    
+    return () => {
+      isMounted.current = false;
+      if (retryTimeout.current) clearTimeout(retryTimeout.current);
+    };
   }, []);
 
-  const MAX_SYNC_RETRIES = 3;
-  const [syncRetries, setSyncRetries] = useState(0);
+  // Initial fetch when component mounts or user changes
+  useEffect(() => {
+    if (user?.id) {
+      fetchAttempts.current = 0; // Reset attempts when user changes
+      fetchSubscription();
+    } else {
+      setSubscription(null);
+      setLoading(false);
+    }
+  }, [user?.id, fetchSubscription]);
+
+  const checkValidSubscription = useCallback((data: Subscription): boolean => {
+    return ['active', 'trialing'].includes(data.status) &&
+      new Date(data.current_period_end) > new Date();
+  }, []);
 
   const debouncedSyncWithStripe = useCallback(
     debounce(async (subscriptionId: string) => {
-      if (syncRetries >= MAX_SYNC_RETRIES) {
-        console.log('Max sync retries reached');
-        return;
-      }
+      if (!user?.id || !isMounted.current) return;
 
       try {
         const response = await fetch('/api/stripe/sync', {
@@ -108,40 +155,52 @@ export function useSubscription() {
           throw new Error(errorData.details || 'Failed to sync with Stripe');
         }
         
-        await fetchSubscription();
-        setSyncRetries(0); // Reset retries on success
+        // Force refresh after sync
+        if (isMounted.current) {
+          // Invalidate cache
+          if (user.id in globalSubscriptionCache) {
+            delete globalSubscriptionCache[user.id];
+          }
+          await fetchSubscription(true);
+        }
       } catch (error) {
         console.error('Error syncing with Stripe:', error);
-        setError(error instanceof Error ? error.message : 'Failed to sync with Stripe');
-        setSyncRetries(prev => prev + 1);
+        if (isMounted.current) {
+          setError(error instanceof Error ? error.message : 'Failed to sync with Stripe');
+        }
       }
-    }, 30000), // 30 second delay between calls
-    [fetchSubscription, syncRetries]
+    }, 2000), // Reduced to 2 seconds for more responsive updates
+    [fetchSubscription, user?.id]
   );
 
   const syncWithStripe = useCallback((subscriptionId: string) => {
+    if (!subscriptionId) return;
     debouncedSyncWithStripe(subscriptionId);
   }, [debouncedSyncWithStripe]);
 
+  // Set up subscription to real-time updates
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
 
     const channel = supabase
       .channel('subscription_updates')
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*', // Listen for all events (INSERT, UPDATE, DELETE)
           schema: 'public',
           table: 'subscriptions',
           filter: `user_id=eq.${user.id}`
         },
         async (payload) => {
-          const isValid = checkValidSubscription([payload.new as Subscription]);
-          setSubscription(isValid ? payload.new as Subscription : null);
-          if (!isValid) {
-            console.log('Subscription expired or invalidated');
+          console.log('Subscription update received:', payload);
+          
+          // Force refresh the data when we get a real-time update
+          if (user.id in globalSubscriptionCache) {
+            delete globalSubscriptionCache[user.id];
           }
+          
+          await fetchSubscription(true);
         }
       )
       .subscribe();
@@ -149,16 +208,17 @@ export function useSubscription() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, supabase, checkValidSubscription]);
+  }, [user?.id, supabase, fetchSubscription]);
 
+  // Sync with Stripe when subscription ID changes
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     
     if (subscription?.stripe_subscription_id) {
-      // Add a delay before first sync
+      // Add a shorter delay before first sync
       timeoutId = setTimeout(() => {
         syncWithStripe(subscription.stripe_subscription_id);
-      }, 1000);
+      }, 500);
     }
 
     return () => {
@@ -170,9 +230,7 @@ export function useSubscription() {
     subscription,
     isLoading: loading,
     error,
-    syncWithStripe: useCallback((subscriptionId: string) => {
-      debouncedSyncWithStripe(subscriptionId);
-    }, [debouncedSyncWithStripe]),
-    fetchSubscription // Expose fetch function for manual refresh
+    syncWithStripe,
+    fetchSubscription
   };
 } 
