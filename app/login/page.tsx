@@ -58,14 +58,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[url('/login.png')] bg-cover bg-center bg-no-repeat">
       <div className="w-full max-w-md">
-        <Card variant="minimal">
+        <Card className="bg-background/50 backdrop-blur-lg border border-primary/20 shadow-lg rounded-xl">
           <CardHeader className="text-center space-y-2">
-            <CardTitle className="text-2xl">Welcome back</CardTitle>
-            <CardDescription>
-              Sign in to your account to continue
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <LoginForm

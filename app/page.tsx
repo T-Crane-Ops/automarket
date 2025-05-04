@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from 'react';
-import { VideoModal } from '@/components/VideoModal';
 import { HeroSection } from '@/components/landingpage/hero';
 import { NavBar } from '@/components/landingpage/navbar';
 import { CTASection } from '@/components/landingpage/cta';
@@ -13,16 +11,7 @@ import { FeatureGridSection } from "@/components/landingpage/feature";
 import TimelineSection from "@/components/landingpage/timeline";
 
 export default function LandingPage() {
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
-
-  // Only override what's necessary for the demo video functionality
   const heroActions = [
-    {
-      text: "Watch Demo",
-      href: "#",
-      variant: "default" as const,
-      onClick: () => setIsVideoModalOpen(true)
-    },
     {
       text: "Start Free Trial",
       href: "/dashboard",
@@ -63,12 +52,6 @@ export default function LandingPage() {
       </section>
 
       <Footer />
-
-      <VideoModal
-        isOpen={isVideoModalOpen}
-        onClose={() => setIsVideoModalOpen(false)}
-        videoId="S1cnQG0-LP4"
-      />
     </div>
   );
 }

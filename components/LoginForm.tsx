@@ -33,42 +33,21 @@ export function LoginForm({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-md mx-auto p-6 rounded-lg border border-border/30 shadow-sm bg-card">
+      <h2 className="text-2xl font-bold text-center mb-6">
+        {isSignUp ? 'Create Account' : 'Welcome Back'}
+      </h2>
+
       {error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="border-2">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription className="font-medium">{error}</AlertDescription>
         </Alert>
       )}
 
-      <div className="space-y-4">
-        <Button 
-          variant="outline" 
-          onClick={onGoogleSignIn}
-          disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2"
-        >
-          <Image
-            src="/Google-Logo.png"
-            alt="Google Logo"
-            width={18}
-            height={18}
-            className="mr-2"
-          />
-          {isSignUp ? 'Sign up with Google' : 'Continue with Google'}
-        </Button>
-
-        <div className="relative flex items-center justify-center">
-          <span className="absolute inset-x-0 h-px bg-border" />
-          <span className="relative bg-background px-2 text-muted-foreground text-sm">
-            or continue with email
-          </span>
-        </div>
-      </div>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="text-foreground font-medium">Email</Label>
           <Input
             id="email"
             type="email"
@@ -77,18 +56,19 @@ export function LoginForm({
             placeholder="name@example.com"
             required
             disabled={isLoading}
+            className="bg-background border-border focus:border-primary h-11"
           />
         </div>
         
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-foreground font-medium">Password</Label>
             {!isSignUp && (
               <Button
                 type="button"
                 variant="link"
                 size="sm"
-                className="px-0"
+                className="px-0 font-medium text-primary hover:text-primary/80"
                 onClick={() => setIsForgotPasswordOpen(true)}
               >
                 Forgot password?
@@ -103,28 +83,53 @@ export function LoginForm({
             placeholder="••••••••"
             required
             disabled={isLoading}
+            className="bg-background border-border focus:border-primary h-11"
           />
         </div>
 
         <Button 
           type="submit" 
-          className="w-full" 
+          className="w-full h-11 font-medium text-base" 
           disabled={isLoading}
         >
           {isLoading 
             ? 'Processing...' 
             : isSignUp 
-              ? 'Create account' 
-              : 'Sign in'
+              ? 'Create Account' 
+              : 'Sign In'
           }
         </Button>
 
-        <div className="text-center text-sm">
+        <div className="relative flex items-center my-6">
+          <hr className="flex-grow border-border" />
+          <span className="px-4 text-foreground/80 font-medium">or</span>
+          <hr className="flex-grow border-border" />
+        </div>
+
+        <Button 
+          variant="outline" 
+          onClick={onGoogleSignIn}
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-2 h-11 border-border"
+        >
+          <Image
+            src="/Google-Logo.png"
+            alt="Google Logo"
+            width={18}
+            height={18}
+            className="mr-2"
+          />
+          <span className="font-medium">
+            {isSignUp ? 'Sign up with Google' : 'Continue with Google'}
+          </span>
+        </Button>
+
+        <div className="text-center pt-2">
           <Button
             type="button"
             variant="link"
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-primary"
+            className="text-primary font-medium hover:text-primary/80"
           >
             {isSignUp ? 'Already have an account? Sign in' : 'Don\'t have an account? Sign up'}
           </Button>

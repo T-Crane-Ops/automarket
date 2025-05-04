@@ -84,7 +84,7 @@ export default function UpdatePasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <Card variant="minimal" className="max-w-md w-full">
+      <Card className="bg-background/50 backdrop-blur-sm border border-primary/10 max-w-md w-full">
         <CardHeader className="text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
             <KeyRound className="h-6 w-6 text-primary" />

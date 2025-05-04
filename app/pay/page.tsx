@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useSubscription } from '@/hooks/useSubscription';
 import { StripeBuyButton } from '@/components/StripeBuyButton';
 import { SubscriptionStatus } from '@/components/SubscriptionStatus';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, RotateCw } from "lucide-react";
 
 export default function PaymentPage() {
   // const { user } = useAuth();
@@ -31,16 +34,25 @@ export default function PaymentPage() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] p-4">
-        <h1 className="text-xl md:text-2xl font-bold mb-4 text-center">Error Loading Subscription</h1>
-        <p className="text-gray-600 mb-4 text-center">
-          Unable to load subscription information. Please try again later.
-        </p>
-        <button
-          onClick={() => router.push('/pay')}
-          className="bg-primary hover:bg-primary-darker text-white px-6 py-2 rounded-lg"
-        >
-          Retry
-        </button>
+        <Card className="w-full max-w-md bg-background/50 backdrop-blur-sm border border-destructive/30">
+          <CardHeader className="items-center text-center">
+            <AlertTriangle className="h-8 w-8 text-destructive mb-2" />
+            <CardTitle className="text-xl">Error Loading Subscription</CardTitle>
+            <CardDescription className="text-muted-foreground mt-1">
+              Unable to load subscription information. Please try again later.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <Button
+              onClick={() => window.location.reload()}
+              variant="destructive"
+              className="rounded-full"
+            >
+              <RotateCw className="mr-2 h-4 w-4" />
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -48,16 +60,23 @@ export default function PaymentPage() {
   if (!canSubscribe) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] p-4">
-        <h1 className="text-xl md:text-2xl font-bold mb-4 text-center">Subscription Not Available</h1>
-        <p className="text-gray-600 mb-4 text-center">
-          You already have an active or pending subscription.
-        </p>
-        <button
-          onClick={() => router.push('/profile')}
-          className="bg-primary hover:bg-primary-darker text-white px-6 py-2 rounded-lg"
-        >
-          View Subscription
-        </button>
+        <Card className="w-full max-w-md bg-background/50 backdrop-blur-sm border border-primary/10">
+          <CardHeader className="items-center text-center">
+            <CardTitle className="text-xl">Subscription Not Available</CardTitle>
+            <CardDescription className="text-muted-foreground mt-1">
+              You already have an active or pending subscription.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <Button
+              onClick={() => router.push('/profile')}
+              variant="outline"
+              className="rounded-full"
+            >
+              View Subscription
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }

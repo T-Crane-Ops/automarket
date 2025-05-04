@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Mail } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 function VerifyEmailContent() {
   const { user, supabase } = useAuth();
@@ -65,7 +66,7 @@ function VerifyEmailContent() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <Card variant="minimal" className="max-w-md w-full">
+      <Card className="bg-background/50 backdrop-blur-sm border border-primary/10 max-w-md w-full">
         <CardHeader className="text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
             <Mail className="h-6 w-6 text-primary" />
@@ -81,10 +82,12 @@ function VerifyEmailContent() {
             <p>Please check your email and click the verification link to continue.</p>
             
             {resendSuccess && (
-              <div className="flex items-center gap-2 text-green-500 mt-2 justify-center">
+              <Alert variant="success" className="mt-2">
                 <CheckCircle2 className="h-4 w-4" />
-                <span>New verification email sent!</span>
-              </div>
+                <AlertDescription>
+                  New verification email sent!
+                </AlertDescription>
+              </Alert>
             )}
           </div>
           

@@ -47,10 +47,10 @@ function ResetPasswordContent() {
   if (!email) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <Card variant="minimal" className="max-w-md w-full">
+        <Card className="bg-background/50 backdrop-blur-sm border border-primary/10 max-w-md w-full">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Invalid Request</CardTitle>
-            <CardDescription>
+            <CardDescription className="text-muted-foreground">
               No email address provided for password reset
             </CardDescription>
           </CardHeader>
@@ -69,7 +69,7 @@ function ResetPasswordContent() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <Card variant="minimal" className="max-w-md w-full">
+      <Card className="bg-background/50 backdrop-blur-sm border border-primary/10 max-w-md w-full">
         <CardHeader className="text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
             <Mail className="h-6 w-6 text-primary" />
@@ -87,8 +87,8 @@ function ResetPasswordContent() {
           {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {error}
+              <AlertDescription className="flex items-center justify-between">
+                <span>{error}</span>
                 <Button
                   variant="link"
                   onClick={handleResetPassword}
